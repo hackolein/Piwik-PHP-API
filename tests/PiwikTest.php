@@ -134,11 +134,21 @@ class PiwikTest extends PHPUnit_Framework_TestCase
 
 		$result4 = $this->_piwik->getVisits();
 		$result4 = $result4->$date;
+		$this->_piwik->reset();
+
+		// previousX respectively lastX date
+		$this->_piwik->setPeriod(Piwik::PERIOD_DAY);
+		$this->_piwik->setRange('previous7');
+
+		$result5 = $this->_piwik->getVisits();
+		$result5 = $result5->$date;
+
 
 		// Compare results
 		$this->assertEquals($result1, $result2);
 		$this->assertEquals($result2, $result3);
 		$this->assertEquals($result3, $result4);
+		$this->assertEquals($result4, $result5);
 	}
 
 	/**
@@ -174,5 +184,21 @@ class PiwikTest extends PHPUnit_Framework_TestCase
 
 		$this->assertFalse($result);
 		$this->assertEquals(2, count($this->_piwik->getErrors()));
+	}
+
+	/**
+	 * Test if optional parameters work.
+	 */
+	public function testOptionalParameters()
+	{
+		$this->_piwik->setDate('2011-01-11');
+		$this->_piwik->setPeriod(Piwik::PERIOD_WEEK);
+		$result = $this->_piwik->getWebsites('', [
+			'flat' => 1,
+		]);
+
+		$this->assertInternalType('array', $result);
+		$this->assertEquals('', implode(',', $this->_piwik->getErrors()));
+		$this->assertEquals(388, $result[0]->nb_visits);
 	}
 }
